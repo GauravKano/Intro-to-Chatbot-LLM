@@ -1,4 +1,4 @@
-# 🤖 Intro to Chatbot & LLMs — Live Coding Project
+# 🤖 AI@UCF - Intro to Chatbot & LLMs
 
 Welcome to the **Intro to Chatbot & LLMs** live coding session!  
 This project is designed to help you understand how to build a simple chatbot UI and connect it to a Large Language Model (LLM) using the **Groq SDK**.
