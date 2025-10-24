@@ -7,10 +7,16 @@
   - Displaying responses from the assistant
  
  🧩 What to do in this file:
- Replace the code inside the section below (marked with "SEND MESSAGE TO API")
+ Replace the code inside the section below (marked with "!!!! ADD FETCH LOGIC HERE !!!!")
  with your own logic for sending the message (if you’re modifying or extending it).
- The provided code snippet uses fetch() to send chat messages to /api/chat and
+ The code snippet should use fetch() to send chat messages to /api/chat and
  update the chat state with the assistant’s reply.
+
+ 🚀 Challenge:
+ Implement streaming logic to receive responses from /api/stream.
+  - Look for the section marked "!!! ADD STREAM LOGIC HERE !!!"
+  - Use `ReadableStream` + `TextDecoder` to read chunks as they arrive
+  - Append each chunk to the assistant’s message in the chat UI so it displays live
  */
 
 "use client";
@@ -55,6 +61,64 @@ export default function Home() {
     setLoading(false);
   };
 
+  const sendStreamMessage = async () => {
+    if (!input.trim()) return;
+    setLoading(true);
+
+    const myNewMessage: Message = { role: "user", content: input };
+    const newMessages = [...messages, myNewMessage];
+    setMessages(newMessages);
+    setInput("");
+
+    /* Completed Challenge: Add frontend streaming logic to receive and decode stream */
+    try {
+      const response = await fetch("/api/stream", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ messages: newMessages }),
+      });
+
+      if (!response.body) {
+        throw new Error("Failed to receive stream");
+      }
+
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let assistantResponse = "";
+
+      // Add a placeholder for the chatbot's response
+      setMessages((currentMessages) => [
+        ...currentMessages,
+        { role: "assistant", content: "" },
+      ]);
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        const chunk = decoder.decode(value);
+        assistantResponse += chunk;
+
+        // Update the last message
+        setMessages((currentMessages) => {
+          const lastMessage = currentMessages[currentMessages.length - 1];
+          if (lastMessage.role === "assistant") {
+            return [
+              ...currentMessages.slice(0, -1),
+              { ...lastMessage, content: assistantResponse },
+            ];
+          } else {
+            return currentMessages;
+          }
+        });
+      }
+    } catch (error) {
+      console.error("Failed to fetch response:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-950 text-gray-100 p-4">
       <div className="w-full max-w-2xl space-y-4">
@@ -73,7 +137,7 @@ export default function Home() {
               }`}
             >
               <div
-                className={`rounded-2xl px-4 py-2 text-sm max-w-[75%] break-words ${
+                className={`rounded-2xl px-4 py-2 text-sm max-w-[75%] wrap-break-word ${
                   m.role === "user"
                     ? "bg-blue-600 text-white rounded-br-none"
                     : "bg-gray-700 text-gray-100 rounded-bl-none"
