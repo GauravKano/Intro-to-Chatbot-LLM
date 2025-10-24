@@ -37,7 +37,20 @@ export default function Home() {
     setMessages(newMessages);
     setInput("");
 
-    /* !!!! Add Fetch Logic Here  !!!! */
+    /* Completed Task: Add fetch and save assistant reply to messages */
+    const res = await fetch("/api/chat", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ messages: newMessages }),
+    });
+
+    const data = await res.json();
+
+    const assistantMessage: Message = {
+      role: "assistant",
+      content: data.reply || "Error!!!",
+    };
+    setMessages([...newMessages, assistantMessage]);
 
     setLoading(false);
   };
@@ -88,7 +101,7 @@ export default function Home() {
             placeholder="Type your message..."
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && sendMessage()}
+            onKeyDown={(e) => e.key === "Enter" && !loading && sendMessage()}
           />
           <button
             className="bg-blue-600 px-4 py-2 rounded-xl hover:bg-blue-500 transition disabled:opacity-50"
