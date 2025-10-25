@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "Intro to Chatbot & LLMs",
-  description: "Creating a basic chatbot using groq and vercel ai sdk",
+  description: "Creating a basic chatbot using groq",
 };
 
 export default function RootLayout({
